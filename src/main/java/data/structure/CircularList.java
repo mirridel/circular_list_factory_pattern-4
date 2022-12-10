@@ -423,20 +423,13 @@ public class CircularList<T> implements Serializable {
 	}
 
 	public CircularList<T> mergeSort(Comparator<T> comparator) {
-
 		int mid = size() / 2;
 		if (mid == 0)
 			return this;
-
 		CircularList<T> L = subList(0, mid);
-		//System.out.println("L: " + L);
-
 		CircularList<T> R = subList(mid, size());
-		//System.out.println("R: " + R);
-
 		var first = L.mergeSort(comparator);
 		var second = R.mergeSort(comparator);
-
 		return merge(first, second, comparator);
 	}
 
@@ -467,54 +460,6 @@ public class CircularList<T> implements Serializable {
 	}
 
 	// РЕАЛИЗАЦИЯ СО СЧЕТЧИКОМ
-
-	public void addBack(T data, Counter count) {
-		Node<T> newNode = new Node<T>(data);
-		count.inc();
-		if (isEmpty()) {
-			head = newNode;
-			count.inc();
-			tail = newNode;
-			count.inc();
-			head.setPrevious(tail);
-			count.inc();
-			tail.setNext(head);
-			count.inc();
-		}
-		else {
-			tail.setNext(newNode);
-			count.inc();
-			newNode.setPrevious(tail);
-			count.inc();
-			tail = newNode;
-			count.inc();
-			tail.setNext(head);
-			count.inc();
-		}
-		numElements++;
-		count.inc();
-	}
-
-	public void removeFront(Counter count) {
-		if(!isEmpty()){
-			if(head.getNext() == head){
-				head = null;
-				count.inc();
-				tail = null;
-				count.inc();
-			}else{
-				head = head.getNext();
-				count.inc();
-				head.setPrevious(tail);
-				count.inc();
-				tail.setNext(head);
-				count.inc();
-			}
-		}
-		numElements--;
-		count.inc();
-	}
-
 	public CircularList<T> subList(int min, int max, Counter count){
 		CircularList<T> lst = new CircularList<>();
 		AtomicInteger n = new AtomicInteger();
@@ -525,7 +470,6 @@ public class CircularList<T> implements Serializable {
 				count.inc();
 			}
 			n.getAndIncrement();
-			count.inc();
 		});
 
 		return lst;
@@ -534,17 +478,14 @@ public class CircularList<T> implements Serializable {
 	public CircularList<T> mergeSort(Comparator<T> comparator, Counter count) {
 
 		int mid = size() / 2;
-		count.inc();
 		if (mid == 0)
 			return this;
+
 		CircularList<T> L = subList(0, mid, count);
-		count.inc();
 		CircularList<T> R = subList(mid, size(), count);
-		count.inc();
+
 		var first = L.mergeSort(comparator, count);
-		count.inc();
 		var second = R.mergeSort(comparator, count);
-		count.inc();
 
 		return merge(first, second, comparator, count);
 	}
@@ -556,21 +497,25 @@ public class CircularList<T> implements Serializable {
 		if (first != null && second != null) {
 			while (first.size() > 0 && second.size() > 0) {
 				if (comparator.compare(first.getHeadData(), second.getHeadData()) <= 0) {
-					accumulator.addBack(first.getHeadData(), count);
-					first.removeFront(count);
+					accumulator.addBack(first.getHeadData());
+					count.inc();
+					first.removeFront();
 				}
 				else {
-					accumulator.addBack(second.getHeadData(), count);
-					second.removeFront(count);
+					accumulator.addBack(second.getHeadData());
+					count.inc();
+					second.removeFront();
 				}
 			}
 			while (first.size() > 0) {
-				accumulator.addBack(first.getHeadData(), count);
-				first.removeFront(count);
+				accumulator.addBack(first.getHeadData());
+				count.inc();
+				first.removeFront();
 			}
 			while (second.size() > 0) {
-				accumulator.addBack(second.getHeadData(), count);
-				second.removeFront(count);
+				accumulator.addBack(second.getHeadData());
+				count.inc();
+				second.removeFront();
 			}
 		}
 		return accumulator;
@@ -596,7 +541,7 @@ public class CircularList<T> implements Serializable {
 		var accumulator = new CircularList<T>();
 		if (first != null && second != null) {
 			while (first.size() > 0 && second.size() > 0) {
-				// DEFECT #1
+				// ДЕФЕКТ #1
 				if (comparator.compare(first.getHeadData(), second.getHeadData()) <= 1) {
 					accumulator.addBack(first.getHeadData());
 					first.removeFront();
